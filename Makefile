@@ -4,13 +4,11 @@ copy-env:
 	@cp .env-sample .env
 
 db-setup:
-	chmod +x ./scripts/db.sh
+	@chmod +x ./scripts/db.sh
 	./scripts/db.sh
 
 cli-migrate:
-	migrate create -dir migrations -ext sql -seq account_table
-	migrate create -dir migrations -ext sql -seq entries_table
-	migrate create -dir migrations -ext sql -seq transfers_table
+	migrate create -dir migrations -ext sql -seq $(MIGRATION_NAME)
 
 cli-migrate-up:
 	migrate -database ${POSTGRESQL_URL} -path migrations up
