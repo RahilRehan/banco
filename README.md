@@ -26,9 +26,3 @@ make db-setup
 ```bash
 make MIGRATION_NAME=some_name cli-migrate
 ```
-#### TODO
-- split migration.sql to multiple migration scripts - done this with golang migrate cli tool, need to check how to do it with code
-- move some db env variables to .env file
-
-- add colors to make commands
-- all scripts in one folder
