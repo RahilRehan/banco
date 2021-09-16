@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS "transfers" (
      "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-ALTER TABLE "transfers" ADD FOREIGN KEY ("from_account") REFERENCES "account" ("id");
-ALTER TABLE "transfers" ADD FOREIGN KEY ("to_account") REFERENCES "account" ("id");
+ALTER TABLE "transfers" ADD FOREIGN KEY ("from_account") REFERENCES "accounts" ("id");
+ALTER TABLE "transfers" ADD FOREIGN KEY ("to_account") REFERENCES "accounts" ("id");
 
 CREATE INDEX ON "transfers" ("from_account");
 CREATE INDEX ON "transfers" ("to_account");
