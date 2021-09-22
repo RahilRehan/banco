@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS "account"  (
+CREATE TABLE IF NOT EXISTS "accounts"  (
    "id" bigserial PRIMARY KEY,
    "owner" varchar NOT NULL,
    "balance" bigint NOT NULL,
@@ -6,4 +6,4 @@ CREATE TABLE IF NOT EXISTS "account"  (
    "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE INDEX ON "account" ("owner");
+CREATE INDEX ON "accounts" ("owner");

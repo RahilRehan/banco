@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS  "entries" (
    "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-ALTER TABLE "entries" ADD FOREIGN KEY ("account_id") REFERENCES "account" ("id");
+ALTER TABLE "entries" ADD FOREIGN KEY ("account_id") REFERENCES "accounts" ("id");
 
 CREATE INDEX ON "entries" ("account_id");
 

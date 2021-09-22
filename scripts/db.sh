@@ -9,7 +9,7 @@ NC=$'\e[0m'
 source .env
 
 echo "${GREEN}Brining up postgres docker container...${NC}"
-docker run --name postgres-banco -p 5432:5432 -v banco-data:/var/lib/postgresql/data -e POSTGRES_USER="${DB_ROOT_USER}" -e POSTGRES_PASSWORD=${DB_ROOT_PASSWORD} -d postgres
+docker run --name postgres-banco -p 5432:5432 -v banco-data:/var/lib/postgresql/data -e POSTGRES_USER="${DB_ROOT_USER}" -e POSTGRES_PASSWORD="${DB_ROOT_PASSWORD}" -d postgres
 
 echo "${GREEN}Waiting for postgres container to boot...${NC}"
 while ! curl "http://localhost:5432" 2>&1 | grep '52' >> /dev/null; do sleep 2; done

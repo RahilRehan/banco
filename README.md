@@ -11,11 +11,6 @@
   - Postgres
 - Make
 
-#### INITIAL SETUP
-- export all secret environment variables
-```bash
-make export-vars
-```
 #### DATABASE DESIGN & SETUP
 ![db design](dbdesign.png)
 - Bring up postgres docker container and create user and db for banco
@@ -25,4 +20,12 @@ make db-setup
 - Create a new migration file (both up and down)
 ```bash
 make MIGRATION_NAME=some_name cli-migrate
+```
+- Run migrations
+```bash
+make cli-migrate-up
+```
+- Revert migrations
+```bash
+make cli-migrate-down
 ```
