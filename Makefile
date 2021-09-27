@@ -20,6 +20,6 @@ sqlc-generate:
 	sqlc -f db/sqlc.yaml generate
 
 test:
-	go test -v -cover ./...
+	go test -v -cover ./... | { grep -v 'no test files'; true; }
 
 .PHONY: test

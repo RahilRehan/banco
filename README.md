@@ -11,7 +11,7 @@
   - Postgres
 - Make
 
-#### DATABASE DESIGN & SETUP
+### 1. DATABASE SETUP
 ![db design](dbdesign.png)
 - Bring up postgres docker container and create user and db for banco
 ```bash
@@ -29,3 +29,12 @@ make cli-migrate-up
 ```bash
 make cli-migrate-down
 ```
+
+### Making money transaction
+- Transaction in databases is a very small unit of a program and it may contain several lowlevel tasks.
+For this application, the transaction includes:
+1. Create a transfer record with amount 10
+2. Create an entry for account1 with -10
+3. Create an entry for account2 with +10
+4. Substract 10 from balance of account1
+5. Add 10 to balance of accoun2
