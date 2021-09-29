@@ -29,6 +29,10 @@ make cli-migrate-up
 ```bash
 make cli-migrate-down
 ```
+- Use sqlc to generate crud code, specify migrations and queries rest will be taken care
+```
+make sqlc-generate
+```
 
 ### Making money transaction
 - Transaction in databases is a very small unit of a program and it may contain several lowlevel tasks.
@@ -36,5 +40,5 @@ For this application, the transaction includes:
 1. Create a transfer record with amount 10
 2. Create an entry for account1 with -10
 3. Create an entry for account2 with +10
-4. Substract 10 from balance of account1
-5. Add 10 to balance of accoun2
+4. Subtract 10 from balance of account1
+5. Add 10 to balance of account2
