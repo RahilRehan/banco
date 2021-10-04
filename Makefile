@@ -21,6 +21,6 @@ sqlc-generate:
 
 test:
 	go clean -testcache
-	go test -v -cover ./... | { grep -v 'no test files'; true; }
+	go test -v -cover ./...
 
 .PHONY: test
