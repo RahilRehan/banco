@@ -75,39 +75,6 @@ func (store *Store) TransferTx(ctx context.Context, args TransferTxParams) (Tran
 			return err
 		}
 
-		// not so better way
-		// account1, err := q.GetAccountForUpdate(context.Background(), args.FromAccountID)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// result.FromAccount, err = q.UpdateAccount(context.Background(), UpdateAccountParams{args.FromAccountID, account1.Balance - args.Amount})
-		// if err != nil {
-		// 	return err
-		// }
-
-		// account2, err := q.GetAccountForUpdate(context.Background(), args.ToAccountID)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// result.ToAccount, err = q.UpdateAccount(context.Background(), UpdateAccountParams{args.ToAccountID, account2.Balance + args.Amount})
-		// if err != nil {
-		// 	return err
-		// }
-
-		// better way
-		// result.FromAccount, err = q.AddAccountBalance(context.Background(), AddAccountBalanceParams{-args.Amount, args.FromAccountID})
-		// if err != nil {
-		// 	return err
-		// }
-
-		// result.ToAccount, err = q.AddAccountBalance(context.Background(), AddAccountBalanceParams{args.Amount, args.ToAccountID})
-		// if err != nil {
-		// 	return err
-		// }
-
-		// avoid deadlock while updating
 		if args.FromAccountID < args.ToAccountID {
 			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, args.FromAccountID, -args.Amount, args.ToAccountID, args.Amount)
 			if err != nil {
