@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strconv"
 	"testing"
 	"time"
 
@@ -19,6 +18,10 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
+const (
+	timeout = 5
+)
+
 var testQueries *Queries
 var testDB *sql.DB
 var dataSource string
@@ -26,12 +29,12 @@ var dataSource string
 func TestMain(m *testing.M) {
 	var err error
 
-	cfg, err := util.LoadConfig("../")
+	cfg, err := util.LoadConfig("..")
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("cannot read config")
 	}
 
-	dataSource, err = CreateTestDBContainer(*cfg)
+	dataSource, err = CreateTestDBContainer(cfg)
 	if err != nil {
 		log.Fatalln("Cannot create test postgres container")
 	}
@@ -50,38 +53,31 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func CreateTestDBContainer(cfg util.Config) (string, error) {
-
-	timeout, err := strconv.Atoi(cfg.TIMEOUT)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+func CreateTestDBContainer(cfg *util.Config) (string, error) {
 	var env = map[string]string{
 		"POSTGRES_PASSWORD": viper.GetString("DB_PASSWORD"),
 		"POSTGRES_USER":     cfg.DB_USER,
 		"POSTGRES_DB":       cfg.DB_NAME,
 	}
+	var port = cfg.DB_PORT + "/tcp"
 	dbURL := func(port nat.Port) string {
-		return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 			cfg.DB_USER,
 			viper.GetString("DB_PASSWORD"),
 			cfg.DB_HOST,
-			cfg.DB_PORT,
-			cfg.DB_NAME,
-			cfg.SSL_MODE,
-		)
+			port.Port(),
+			cfg.DB_NAME)
 	}
-	natPort := nat.Port(cfg.DB_PORT)
+	natPort := nat.Port(port)
 	ctx := context.Background()
 
 	req := testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Image:        "postgres:latest",
-			ExposedPorts: []string{cfg.DB_PORT},
+			ExposedPorts: []string{port},
 			Cmd:          []string{"postgres", "-c", "fsync=off"},
 			Env:          env,
-			WaitingFor:   wait.ForSQL(natPort, "postgres", dbURL).Timeout(time.Second * time.Duration(timeout)),
+			WaitingFor:   wait.ForSQL(natPort, "postgres", dbURL).Timeout(time.Second * timeout),
 		},
 		Started: true,
 	}
