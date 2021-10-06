@@ -7,22 +7,16 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"testing"
 	"time"
 
+	"github.com/RahilRehan/banco/db/util"
 	"github.com/docker/go-connections/nat"
 	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-)
-
-const (
-	host       = "localhost"
-	name       = "test_db"
-	user       = "test_user"
-	password   = "passtemp"
-	timeout    = 5
-	driverName = "postgres"
 )
 
 var testQueries *Queries
@@ -32,12 +26,17 @@ var dataSource string
 func TestMain(m *testing.M) {
 	var err error
 
-	dataSource, err = CreateTestDBContainer()
+	cfg, err := util.LoadConfig("../")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dataSource, err = CreateTestDBContainer(*cfg)
 	if err != nil {
 		log.Fatalln("Cannot create test postgres container")
 	}
 
-	testDB, err = sql.Open(driverName, dataSource)
+	testDB, err = sql.Open(cfg.DRIVER_NAME, dataSource)
 	if err != nil {
 		log.Fatalf("Cannot connect to db %v", err)
 	}
@@ -51,31 +50,38 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func CreateTestDBContainer() (string, error) {
+func CreateTestDBContainer(cfg util.Config) (string, error) {
+
+	timeout, err := strconv.Atoi(cfg.TIMEOUT)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	var env = map[string]string{
-		"POSTGRES_PASSWORD": password,
-		"POSTGRES_USER":     user,
-		"POSTGRES_DB":       name,
+		"POSTGRES_PASSWORD": viper.GetString("DB_PASSWORD"),
+		"POSTGRES_USER":     cfg.DB_USER,
+		"POSTGRES_DB":       cfg.DB_NAME,
 	}
-	var port = "5432/tcp"
 	dbURL := func(port nat.Port) string {
-		return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-			user,
-			password,
-			host,
-			port.Port(),
-			name)
+		return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+			cfg.DB_USER,
+			viper.GetString("DB_PASSWORD"),
+			cfg.DB_HOST,
+			cfg.DB_PORT,
+			cfg.DB_NAME,
+			cfg.SSL_MODE,
+		)
 	}
-	natPort := nat.Port(port)
+	natPort := nat.Port(cfg.DB_PORT)
 	ctx := context.Background()
 
 	req := testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Image:        "postgres:latest",
-			ExposedPorts: []string{port},
+			ExposedPorts: []string{cfg.DB_PORT},
 			Cmd:          []string{"postgres", "-c", "fsync=off"},
 			Env:          env,
-			WaitingFor:   wait.ForSQL(natPort, "postgres", dbURL).Timeout(time.Second * timeout),
+			WaitingFor:   wait.ForSQL(natPort, "postgres", dbURL).Timeout(time.Second * time.Duration(timeout)),
 		},
 		Started: true,
 	}

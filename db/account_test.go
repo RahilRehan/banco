@@ -3,10 +3,11 @@ package db
 import (
 	"context"
 	"database/sql"
-	"github.com/RahilRehan/banco/db/util"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/RahilRehan/banco/db/util"
+	"github.com/stretchr/testify/require"
 )
 
 func createRandomAccount(t *testing.T) Account {
@@ -29,11 +30,11 @@ func createRandomAccount(t *testing.T) Account {
 	return account
 }
 
-func TestCreateAccount(t *testing.T){
+func TestCreateAccount(t *testing.T) {
 	createRandomAccount(t)
 }
 
-func TestGetAccount(t *testing.T){
+func TestGetAccount(t *testing.T) {
 	account1 := createRandomAccount(t)
 	account2, err := testQueries.GetAccount(context.Background(), account1.ID)
 
@@ -47,7 +48,7 @@ func TestGetAccount(t *testing.T){
 	require.WithinDuration(t, account1.CreatedAt, account2.CreatedAt, time.Second)
 }
 
-func TestUpdateAccount(t *testing.T){
+func TestUpdateAccount(t *testing.T) {
 	account1 := createRandomAccount(t)
 
 	var args = UpdateAccountParams{
@@ -66,7 +67,7 @@ func TestUpdateAccount(t *testing.T){
 
 }
 
-func TestDeleteAccount(t *testing.T){
+func TestDeleteAccount(t *testing.T) {
 	account1 := createRandomAccount(t)
 	err := testQueries.DeleteAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
@@ -78,8 +79,8 @@ func TestDeleteAccount(t *testing.T){
 	require.Empty(t, account2)
 }
 
-func TestListAccounts(t *testing.T){
-	for i:=0; i<10; i++ {
+func TestListAccounts(t *testing.T) {
+	for i := 0; i < 10; i++ {
 		account := createRandomAccount(t)
 		require.NotEmpty(t, account)
 	}
@@ -93,7 +94,7 @@ func TestListAccounts(t *testing.T){
 	require.NoError(t, err)
 	require.Len(t, accounts, 5)
 
-	for _, account := range accounts{
+	for _, account := range accounts {
 		require.NotEmpty(t, account)
 	}
 }
