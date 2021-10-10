@@ -1,159 +1,30 @@
 package api
 
 import (
-	"database/sql"
-	"fmt"
-	"net/http"
-
 	"github.com/RahilRehan/banco/db"
 	"github.com/gin-gonic/gin"
 )
 
 type server struct {
-	store  *db.Store
+	store  db.Store
 	router *gin.Engine
-}
-
-type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR"`
-}
-
-type getAccountRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
-type listAccountsRequest struct {
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
-}
-
-type updateAccountRequest struct {
-	ID      int64 `json:"id" binding:"required,min=1"`
-	Balance int64 `json:"balance" binding:"required"`
-}
-
-type deleteAccountRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
-func (s *server) createAccount(ctx *gin.Context) {
-	var req createAccountRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
-		Currency: req.Currency,
-		Balance:  0,
-	}
-
-	account, err := s.store.CreateAccount(ctx, arg)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, account)
-}
-
-func (s *server) getAccount(ctx *gin.Context) {
-	var req getAccountRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-	account, err := s.store.GetAccount(ctx, req.ID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, account)
-
-}
-
-func (s *server) listAccounts(ctx *gin.Context) {
-	var req listAccountsRequest
-	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	args := db.ListAccountsParams{
-		Limit:  req.PageSize,
-		Offset: (req.PageID - 1) * req.PageSize,
-	}
-
-	accounts, err := s.store.ListAccounts(ctx, args)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	ctx.JSON(http.StatusOK, accounts)
-}
-
-func (s *server) updateAccount(ctx *gin.Context) {
-	var req updateAccountRequest
-
-	err := ctx.ShouldBindJSON(&req)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	args := db.UpdateAccountParams{
-		ID:      req.ID,
-		Balance: req.Balance,
-	}
-
-	account, err := s.store.UpdateAccount(ctx, args)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	ctx.JSON(http.StatusOK, account)
-}
-
-func (s *server) deleteAccount(ctx *gin.Context) {
-	var req deleteAccountRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	if err := s.store.DeleteAccount(ctx, req.ID); err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, fmt.Sprintf("Account with id %v deleted", req.ID))
-
-}
-
-func errorResponse(err error) gin.H {
-	return gin.H{"error": err.Error()}
 }
 
 func (s *server) Start(address string) error {
 	return s.router.Run(address)
 }
 
-func NewServer(store *db.Store) *server {
+func NewServer(store db.Store) *server {
 	server := &server{store: store}
 	router := gin.Default()
 
-	router.POST("/accounts", server.createAccount)
+	router.POST("/accounts/", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)
 	router.GET("/accounts", server.listAccounts)
 	router.PUT("/accounts/", server.updateAccount)
 	router.DELETE("/accounts/:id", server.deleteAccount)
+
+	router.POST("/transfers/", server.createTransfer)
 
 	server.router = router
 	return server
