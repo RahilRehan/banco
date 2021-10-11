@@ -3,6 +3,8 @@ package api
 import (
 	"github.com/RahilRehan/banco/db"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 type server struct {
@@ -17,6 +19,10 @@ func (s *server) Start(address string) error {
 func NewServer(store db.Store) *server {
 	server := &server{store: store}
 	router := gin.Default()
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validateCurrency)
+	}
 
 	router.POST("/accounts/", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)
