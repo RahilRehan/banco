@@ -223,7 +223,7 @@ func TestListAccounts(t *testing.T) {
 			server := NewServer(mockStore)
 			recorder := httptest.NewRecorder()
 
-			url := "/accounts"
+			url := "/accounts/"
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 

@@ -29,7 +29,7 @@ var dataSource string
 func TestMain(m *testing.M) {
 	var err error
 
-	cfg, err := util.LoadConfig("..")
+	cfg, err := util.LoadConfig("../..")
 	if err != nil {
 		log.Fatalln("cannot read config")
 	}
@@ -44,7 +44,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Cannot connect to db %v", err)
 	}
 
-	_, err = exec.Command("migrate", "-database", dataSource, "-path", "migrations", "up").Output()
+	_, err = exec.Command("migrate", "-database", dataSource, "-path", "../migrations", "up").Output()
 	if err != nil {
 		log.Fatalf("Cannot run migrations %v", err)
 	}
