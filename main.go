@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/RahilRehan/banco/api"
-	"github.com/RahilRehan/banco/db"
+	db "github.com/RahilRehan/banco/db/sqlc"
 	"github.com/RahilRehan/banco/db/util"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"

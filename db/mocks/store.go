@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	db "github.com/RahilRehan/banco/db"
+	db "github.com/RahilRehan/banco/db/sqlc"
 	mock "github.com/stretchr/testify/mock"
 )
 

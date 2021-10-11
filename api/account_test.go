@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RahilRehan/banco/db"
 	"github.com/RahilRehan/banco/db/mocks"
+	db "github.com/RahilRehan/banco/db/sqlc"
 	"github.com/RahilRehan/banco/db/util"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/mock"
