@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"os"
 
 	db "github.com/RahilRehan/banco/db/sqlc"
 	"github.com/RahilRehan/banco/db/util"
@@ -9,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	"github.com/spf13/viper"
 )
 
 type server struct {
@@ -24,7 +24,8 @@ func (s *server) Start(address string) error {
 }
 
 func NewServer(cfg util.Config, store db.Store) (*server, error) {
-	tokenMaker, err := token.NewPasetoMaker(viper.GetString("TOKEN_SYMMETRIC_KEY"))
+	symmetricKey := os.Getenv("TOKEN_SYMMETRIC_KEY")
+	tokenMaker, err := token.NewPasetoMaker(symmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}

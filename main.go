@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/RahilRehan/banco/api"
 	db "github.com/RahilRehan/banco/db/sqlc"
 	"github.com/RahilRehan/banco/db/util"
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	}
 	dbSource := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		cfg.DB_USER,
-		viper.GetString("DB_PASSWORD"),
+		os.Getenv("DB_PASSWORD"),
 		cfg.DB_HOST,
 		cfg.DB_PORT,
 		cfg.DB_NAME,

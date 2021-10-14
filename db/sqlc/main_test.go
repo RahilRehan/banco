@@ -13,7 +13,6 @@ import (
 	"github.com/RahilRehan/banco/db/util"
 	"github.com/docker/go-connections/nat"
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -55,7 +54,7 @@ func TestMain(m *testing.M) {
 
 func CreateTestDBContainer(cfg *util.Config) (string, error) {
 	var env = map[string]string{
-		"POSTGRES_PASSWORD": viper.GetString("DB_PASSWORD"),
+		"POSTGRES_PASSWORD": os.Getenv("DB_PASSWORD"),
 		"POSTGRES_USER":     cfg.DB_USER,
 		"POSTGRES_DB":       cfg.DB_NAME,
 	}
@@ -63,7 +62,7 @@ func CreateTestDBContainer(cfg *util.Config) (string, error) {
 	dbURL := func(port nat.Port) string {
 		return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 			cfg.DB_USER,
-			viper.GetString("DB_PASSWORD"),
+			os.Getenv("DB_PASSWORD"),
 			cfg.DB_HOST,
 			port.Port(),
 			cfg.DB_NAME)
