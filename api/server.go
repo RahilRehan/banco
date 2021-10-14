@@ -25,7 +25,6 @@ func (s *server) Start(address string) error {
 
 func NewServer(cfg util.Config, store db.Store) (*server, error) {
 	symmetricKey := os.Getenv("TOKEN_SYMMETRIC_KEY")
-	fmt.Println("------------------->",symmetricKey)
 	tokenMaker, err := token.NewPasetoMaker(symmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
