@@ -14,18 +14,21 @@ import (
 	"github.com/RahilRehan/banco/db/mocks"
 	db "github.com/RahilRehan/banco/db/sqlc"
 	"github.com/RahilRehan/banco/db/util"
+	"github.com/RahilRehan/banco/token"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGetAccount(t *testing.T) {
-	account := randomAccount()
+	user := randomUser("temp")
+	account := randomAccount(user.Username)
 
 	testCases := map[string]struct {
 		accountID      int64
 		expectedStatus int
 		stub           func() *mocks.Store
+		setupAuth      func(t *testing.T, req *http.Request, maker token.Maker)
 	}{
 		"Status OK": {
 			accountID:      account.ID,
@@ -34,6 +37,9 @@ func TestGetAccount(t *testing.T) {
 				mockStore := new(mocks.Store)
 				mockStore.On("GetAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("int64")).Return(*account, nil)
 				return mockStore
+			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
 			},
 		},
 		"Not Found": {
@@ -44,6 +50,9 @@ func TestGetAccount(t *testing.T) {
 				mockStore.On("GetAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("int64")).Return(db.Account{}, sql.ErrNoRows)
 				return mockStore
 			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
+			},
 		},
 		"Internal Server Error": {
 			accountID:      account.ID,
@@ -53,6 +62,9 @@ func TestGetAccount(t *testing.T) {
 				mocksStore.On("GetAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("int64")).Return(db.Account{}, errors.New("internal server error"))
 				return mocksStore
 			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
+			},
 		},
 		"Bad request": {
 			accountID:      0,
@@ -61,6 +73,9 @@ func TestGetAccount(t *testing.T) {
 				mocksStore := new(mocks.Store)
 				mocksStore.On("GetAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("int64")).Return(db.Account{}, errors.New("bad request"))
 				return mocksStore
+			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
 			},
 		},
 	}
@@ -75,6 +90,7 @@ func TestGetAccount(t *testing.T) {
 			require.NoError(t, err)
 
 			server := newTestServer(t, mockStore)
+			test.setupAuth(t, req, server.tokenMaker)
 			server.router.ServeHTTP(recorder, req)
 
 			require.Equal(t, test.expectedStatus, recorder.Code)
@@ -83,13 +99,14 @@ func TestGetAccount(t *testing.T) {
 }
 
 func TestCreateAccount(t *testing.T) {
-
-	account := randomAccount()
+	user := randomUser("temp")
+	account := randomAccount(user.Username)
 
 	testCases := map[string]struct {
 		body           gin.H
 		expectedStatus int
 		stubs          func() *mocks.Store
+		setupAuth      func(t *testing.T, req *http.Request, maker token.Maker)
 	}{
 		"Status OK": {
 			body: gin.H{
@@ -102,6 +119,9 @@ func TestCreateAccount(t *testing.T) {
 				mocksStore.On("CreateAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.CreateAccountParams")).Return(*account, nil)
 				return mocksStore
 			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
+			},
 		},
 		"Bad Request": {
 			body: gin.H{
@@ -112,6 +132,9 @@ func TestCreateAccount(t *testing.T) {
 				mocksStore := new(mocks.Store)
 				mocksStore.On("CreateAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.CreateAccountParams")).Return(*account, nil)
 				return mocksStore
+			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
 			},
 		},
 		"Internal server error": {
@@ -124,6 +147,9 @@ func TestCreateAccount(t *testing.T) {
 				mocksStore := new(mocks.Store)
 				mocksStore.On("CreateAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.CreateAccountParams")).Return(db.Account{}, errors.New("internal error"))
 				return mocksStore
+			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
 			},
 		},
 	}
@@ -142,6 +168,9 @@ func TestCreateAccount(t *testing.T) {
 
 			url := "/accounts/"
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+
+			test.setupAuth(t, request, server.tokenMaker)
+
 			require.NoError(t, err)
 			server.router.ServeHTTP(recorder, request)
 			require.Equal(t, test.expectedStatus, recorder.Code)
@@ -150,11 +179,11 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestListAccounts(t *testing.T) {
-
+	user := randomUser("temp")
 	n := 5
 	accounts := make([]db.Account, 5)
 	for i := 0; i < n; i++ {
-		accounts[i] = *randomAccount()
+		accounts[i] = *randomAccount(user.Username)
 	}
 
 	type query struct {
@@ -166,6 +195,7 @@ func TestListAccounts(t *testing.T) {
 		query          query
 		expectedStatus int
 		stubs          func() *mocks.Store
+		setupAuth      func(t *testing.T, req *http.Request, maker token.Maker)
 	}{
 		"Status OK": {
 			query:          query{PageID: 1, PageSize: n},
@@ -174,6 +204,9 @@ func TestListAccounts(t *testing.T) {
 				mocksStore := new(mocks.Store)
 				mocksStore.On("ListAccounts", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.ListAccountsParams")).Return(accounts, nil)
 				return mocksStore
+			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
 			},
 		},
 		"Bad Request": {
@@ -184,6 +217,9 @@ func TestListAccounts(t *testing.T) {
 				mocksStore.On("ListAccounts", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.ListAccountsParams")).Return(accounts, nil)
 				return mocksStore
 			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
+			},
 		},
 		"Internal server error": {
 			query:          query{PageID: 1, PageSize: n},
@@ -192,6 +228,9 @@ func TestListAccounts(t *testing.T) {
 				mocksStore := new(mocks.Store)
 				mocksStore.On("ListAccounts", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.ListAccountsParams")).Return(nil, errors.New("internal error"))
 				return mocksStore
+			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
 			},
 		},
 		"Invalid page id": {
@@ -202,6 +241,9 @@ func TestListAccounts(t *testing.T) {
 				mocksStore.On("ListAccounts", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.ListAccountsParams")).Return(accounts, nil)
 				return mocksStore
 			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
+			},
 		},
 		"Invalid page size": {
 			query:          query{PageID: 1, PageSize: 50},
@@ -210,6 +252,9 @@ func TestListAccounts(t *testing.T) {
 				mocksStore := new(mocks.Store)
 				mocksStore.On("ListAccounts", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.ListAccountsParams")).Return(accounts, nil)
 				return mocksStore
+			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
 			},
 		},
 	}
@@ -232,6 +277,8 @@ func TestListAccounts(t *testing.T) {
 			q.Add("page_size", fmt.Sprintf("%d", test.query.PageSize))
 			request.URL.RawQuery = q.Encode()
 
+			test.setupAuth(t, request, server.tokenMaker)
+
 			server.router.ServeHTTP(recorder, request)
 			require.Equal(t, test.expectedStatus, recorder.Code)
 		})
@@ -240,12 +287,15 @@ func TestListAccounts(t *testing.T) {
 
 func TestUpdateAccount(t *testing.T) {
 
-	account := randomAccount()
+	user := randomUser("temp")
+	account := randomAccount(user.Username)
+
 	extra := 100
 	testCases := map[string]struct {
 		body           gin.H
 		expectedStatus int
 		stubs          func() *mocks.Store
+		setupAuth      func(t *testing.T, req *http.Request, maker token.Maker)
 	}{
 		"Status OK": {
 			body: gin.H{
@@ -258,6 +308,9 @@ func TestUpdateAccount(t *testing.T) {
 				mocksStore.On("UpdateAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.UpdateAccountParams")).Return(db.Account{ID: account.ID, Currency: account.Currency, Balance: account.Balance + int64(extra), Owner: account.Owner, CreatedAt: account.CreatedAt.Add(time.Second)}, nil)
 				return mocksStore
 			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
+			},
 		},
 		"Bad Request": {
 			body: gin.H{
@@ -268,6 +321,9 @@ func TestUpdateAccount(t *testing.T) {
 				mocksStore := new(mocks.Store)
 				mocksStore.On("UpdateAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.UpdateAccountParams")).Return(db.Account{}, nil)
 				return mocksStore
+			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
 			},
 		},
 		"Internal server error": {
@@ -280,6 +336,9 @@ func TestUpdateAccount(t *testing.T) {
 				mocksStore := new(mocks.Store)
 				mocksStore.On("UpdateAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("db.UpdateAccountParams")).Return(db.Account{}, errors.New("internal error"))
 				return mocksStore
+			},
+			setupAuth: func(t *testing.T, req *http.Request, maker token.Maker) {
+				addAuth(t, req, maker, authorizationTypeBearer, user.Username, time.Minute)
 			},
 		},
 	}
@@ -300,70 +359,18 @@ func TestUpdateAccount(t *testing.T) {
 			request, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(data))
 			require.NoError(t, err)
 
+			test.setupAuth(t, request, server.tokenMaker)
+
 			server.router.ServeHTTP(recorder, request)
 			require.Equal(t, test.expectedStatus, recorder.Code)
 		})
 	}
 }
 
-func TestDeleteAccount(t *testing.T) {
-	account := randomAccount()
-
-	testCases := map[string]struct {
-		accountID      int64
-		expectedStatus int
-		stub           func() *mocks.Store
-	}{
-		"Status OK": {
-			accountID:      account.ID,
-			expectedStatus: http.StatusOK,
-			stub: func() *mocks.Store {
-				mockStore := new(mocks.Store)
-				mockStore.On("DeleteAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("int64")).Return(nil)
-				return mockStore
-			},
-		},
-		"Internal Server Error": {
-			accountID:      account.ID,
-			expectedStatus: http.StatusInternalServerError,
-			stub: func() *mocks.Store {
-				mocksStore := new(mocks.Store)
-				mocksStore.On("DeleteAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("int64")).Return(errors.New("internal server error"))
-				return mocksStore
-			},
-		},
-		"Bad request": {
-			accountID:      0,
-			expectedStatus: http.StatusBadRequest,
-			stub: func() *mocks.Store {
-				mocksStore := new(mocks.Store)
-				mocksStore.On("DeleteAccount", mock.AnythingOfType("*gin.Context"), mock.AnythingOfType("int64")).Return(errors.New("bad request"))
-				return mocksStore
-			},
-		},
-	}
-
-	for name, test := range testCases {
-		t.Run(name, func(t *testing.T) {
-			mockStore := test.stub()
-			recorder := httptest.NewRecorder()
-
-			url := fmt.Sprintf("/accounts/%d", test.accountID)
-			req, err := http.NewRequest(http.MethodDelete, url, nil)
-			require.NoError(t, err)
-
-			server := newTestServer(t, mockStore)
-			server.router.ServeHTTP(recorder, req)
-
-			require.Equal(t, test.expectedStatus, recorder.Code)
-		})
-	}
-}
-
-func randomAccount() *db.Account {
+func randomAccount(username string) *db.Account {
 	return &db.Account{
 		ID:       util.RandomInt(1, 1000),
-		Owner:    util.RandomString(6),
+		Owner:    username,
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}

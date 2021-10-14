@@ -2,8 +2,8 @@ version: "1"
 packages:
   - name: "db"
     path: "."
-    queries: "./query/"
-    schema: "./migrations/"
+    queries: "../query/"
+    schema: "../migrations/"
     engine: "postgresql"
     emit_prepared_queries: false
     emit_interface: true

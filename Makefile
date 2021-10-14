@@ -17,7 +17,7 @@ cli-migrate-down:
 	migrate -database ${POSTGRESQL_URL} -path db/migrations down
 
 sqlc-generate:
-	sqlc -f db/sqlc.yaml generate
+	sqlc -f db/sqlc/sqlc.yaml generate
 
 test:
 	go clean -testcache
