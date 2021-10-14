@@ -33,8 +33,10 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
-	server := api.NewServer(store)
-
+	server, err := api.NewServer(*cfg, store)
+	if err != nil {
+		log.Fatalln("Cannot start server ", err)
+	}
 	err = server.Start(cfg.SERVER_ADDRESS)
 	if err != nil {
 		log.Fatalln("Cannot start server ", err)

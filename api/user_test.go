@@ -97,7 +97,7 @@ func TestCreateUser(t *testing.T) {
 
 			mockStore := test.stubs()
 
-			server := NewServer(mockStore)
+			server := newTestServer(t, mockStore)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(test.body)

@@ -74,7 +74,7 @@ func TestGetAccount(t *testing.T) {
 			req, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
-			server := NewServer(mockStore)
+			server := newTestServer(t, mockStore)
 			server.router.ServeHTTP(recorder, req)
 
 			require.Equal(t, test.expectedStatus, recorder.Code)
@@ -134,7 +134,7 @@ func TestCreateAccount(t *testing.T) {
 
 			mockStore := test.stubs()
 
-			server := NewServer(mockStore)
+			server := newTestServer(t, mockStore)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(test.body)
@@ -220,7 +220,7 @@ func TestListAccounts(t *testing.T) {
 
 			mockStore := test.stubs()
 
-			server := NewServer(mockStore)
+			server := newTestServer(t, mockStore)
 			recorder := httptest.NewRecorder()
 
 			url := "/accounts/"
@@ -290,7 +290,7 @@ func TestUpdateAccount(t *testing.T) {
 
 			mockStore := test.stubs()
 
-			server := NewServer(mockStore)
+			server := newTestServer(t, mockStore)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(test.body)
@@ -352,7 +352,7 @@ func TestDeleteAccount(t *testing.T) {
 			req, err := http.NewRequest(http.MethodDelete, url, nil)
 			require.NoError(t, err)
 
-			server := NewServer(mockStore)
+			server := newTestServer(t, mockStore)
 			server.router.ServeHTTP(recorder, req)
 
 			require.Equal(t, test.expectedStatus, recorder.Code)
