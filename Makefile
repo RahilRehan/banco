@@ -1,8 +1,3 @@
--include .env
-
-copy-env:
-	@cp .env-sample .env
-
 db-setup:
 	@chmod +x ./scripts/db.sh
 	./scripts/db.sh
@@ -26,4 +21,4 @@ test:
 server:
 	go run main.go
 
-.PHONY: test
+.PHONY: test, server

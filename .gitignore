@@ -2,3 +2,4 @@
 banko.iml
 .env
 .vscode
+.DS_Store
