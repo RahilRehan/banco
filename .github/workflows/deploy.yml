@@ -20,10 +20,10 @@ jobs:
         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       
     - name: Build container image
-      run: docker build -t registry.digitalocean.com/rahilstore:$(echo $GITHUB_SHA | head -c7) .
+      run: docker build -t registry.digitalocean.com/rahilstore/banco:$(echo $GITHUB_SHA | head -c7) .
 
     - name: Log in to DigitalOcean Container Registry with short-lived credentials
       run: doctl registry login --expiry-seconds 1200
 
     - name: Push image to DigitalOcean Container Registry
-      run: docker push registry.digitalocean.com/rahilstore:$(echo $GITHUB_SHA | head -c7)
+      run: docker push registry.digitalocean.com/rahilstore/banco:$(echo $GITHUB_SHA | head -c7)
