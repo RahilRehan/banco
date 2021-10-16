@@ -44,6 +44,8 @@
   - Interface is used for Token based authentication
   - So, you can easily replace Paseto with JWT
 - Github Actions is used as Pipeline 
+- Docker and docker compose setup
+- Pushing latest images to digital oceans private registery on push
 
 
 ## SETUP
