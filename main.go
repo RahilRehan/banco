@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/RahilRehan/banco/api"
+	migration "github.com/RahilRehan/banco/db/migrations"
 	db "github.com/RahilRehan/banco/db/sqlc"
 	"github.com/RahilRehan/banco/db/util"
 	_ "github.com/lib/pq"
@@ -20,12 +20,17 @@ func main() {
 	}
 	dbSource := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		cfg.DB_USER,
-		os.Getenv("DB_PASSWORD"),
+		cfg.DB_PASSWORD,
 		cfg.DB_HOST,
 		cfg.DB_PORT,
 		cfg.DB_NAME,
 		cfg.SSL_MODE,
 	)
+
+	err = migration.RunMigrations(dbSource, cfg.MIGRATIONS_PATH)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	conn, err := sql.Open(cfg.DRIVER_NAME, dbSource)
 	if err != nil {

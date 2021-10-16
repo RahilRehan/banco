@@ -11,6 +11,8 @@ type Config struct {
 	DB_NAME               string        `mapstructure:"DB_NAME"`
 	DB_PORT               string        `mapstructure:"DB_PORT"`
 	DB_HOST               string        `mapstructure:"DB_HOST"`
+	DB_PASSWORD           string        `mapstructure:"DB_PASSWORD"`
+	MIGRATIONS_PATH       string        `mapstructure:"MIGRATIONS_PATH"`
 	DRIVER_NAME           string        `mapstructure:"DRIVER_NAME"`
 	SSL_MODE              string        `mapstructure:"SSL_MODE"`
 	TIMEOUT               string        `mapstructure:"TIMEOUT"`

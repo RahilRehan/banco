@@ -47,47 +47,56 @@
 
 
 ## SETUP
-### Setup Database
-- before setting running below commands, make sure docker is running
-- Script creates root user for postgres and then creates a `bancoadmin` user and `bancodb` db which the app will use
-- Enter details for postgres root user and password. And enter password for `bancoadmin` user
-- `bancoadmin` and `bancodb` is defined in `app.env`
-  ```bash
-  make db-setup
-  ```
-### Run Migrations
-- To run migrations, `POSTGRES_URL` variables must be exported
-- replace {PASSWORD} with the password you entered while creating bancoadmin in previous step
+
+### Export variables
+```bash
+  export POSTGRES_USER=postgres
+  export POSTGRES_PASSWORD=anything
+  export DB_HOST=localhost # for local setup
+  export DB_HOST=host.docker.internal # for docker setup
+  export TOKEN_SYMMETRIC_KEY=blahblahblahblahblahblahblahblah # 32 in length
+
 ```
-export POSTGRESQL_URL='postgres://bancoadmin:{PASSWORD}@localhost:5432/bancodb?sslmode=disable'
+
+### local setup
+- `bancoadmin` and `bancodb` is defined in `app.env`
+```bash
+  make run-postgres
+  make create-db
+  make server
+```
+
+### Run Migrations
+- Migrations are run by default when app restarts
+- But, if you want to run migrations from cli, `POSTGRES_URL` variables must be exported
+```
+export POSTGRESQL_URL='postgres://${POSTGRES_USER}:{$POSTGRES_PASSWORD}@localhost:5432/bancodb?sslmode=disable'
 cli-migrate-up
 ```
+
 ### Run tests
 ```
 make test
 ```
-### Export variables
-```
-export TOKEN_SYMMETRIC_KEY=qwertyuiopasdfghjklzxcvbnmqwerty
-export DB_PASSWORD={PASSWORD}
-export DB_HOST=localhost # for local setup
-export DB_HOST=host.docker.internal # for docker setup
-```
-### Run banco app
-- make sure token is 32 in length
-```
-make server
+
+### Docker setup
+```bash
+  export DB_HOST=host.docker.internal
+  make run-postgres
+  docker network create banco
+  docker network  connect banco postgres-banco
+  docker build -t banco .
+  docker run --name banco -p 8080:8080 --network banco -e DB_USER=${POSTGRES_USER} -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -e TOKEN_SYMMETRIC_KEY=${TOKEN_SYMMETRIC_KEY} -e DB_HOST=${DB_HOST} -e GIN_MODE=release banco
 ```
 
-## Docker setup
-```
+## Docker compose setup
+```bash
 export DB_HOST=host.docker.internal
-make setup-db
-docker network create banco
-docker network  connect banco postgres-banco
-docker run --name banco -p 8080:8080 --network banco -e DB_PASSWORD=${DB_PASSWORD} -e TOKEN_SYMMETRIC_KEY=${TOKEN_SYMMETRIC_KEY} -e DB_HOST=${DB_HOST} GIN_MODE=release banco
 ```
+- If you want to run any command line snippets for docker compose setup, use concept of start.sh !(more details)[https://www.youtube.com/watch?v=jf6sQsz0M1M&list=PLy_6D98if3ULEtXtNSY_2qN21VCKgoQAE&index=25]
 
+- All the above instructions can be bundled together into makefile target or some script, but I like it this way as it will become very easier to debug if you know what is happening under the hood.
+  
 ### Use API
 - Export the below collection in postman or thunder-client(vscode)
 - After `create-user`, run user `user-login` to get the token to perform any other api action

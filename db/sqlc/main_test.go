@@ -62,7 +62,7 @@ func CreateTestDBContainer(cfg *util.Config) (string, error) {
 	dbURL := func(port nat.Port) string {
 		return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 			cfg.DB_USER,
-			os.Getenv("DB_PASSWORD"),
+			cfg.DB_PASSWORD,
 			cfg.DB_HOST,
 			port.Port(),
 			cfg.DB_NAME)
