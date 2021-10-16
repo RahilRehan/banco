@@ -29,6 +29,7 @@ jobs:
       
     - name: Test
       env:
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
         TOKEN_SYMMETRIC_KEY: ${{ secrets.TOKEN_SYMMETRIC_KEY }}
       run: make test

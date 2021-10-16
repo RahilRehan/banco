@@ -54,7 +54,7 @@ func TestMain(m *testing.M) {
 
 func CreateTestDBContainer(cfg *util.Config) (string, error) {
 	var env = map[string]string{
-		"POSTGRES_PASSWORD": os.Getenv("DB_PASSWORD"),
+		"POSTGRES_PASSWORD": cfg.DB_PASSWORD,
 		"POSTGRES_USER":     cfg.DB_USER,
 		"POSTGRES_DB":       cfg.DB_NAME,
 	}
