@@ -93,7 +93,7 @@ make test
 ```bash
 export DB_HOST=host.docker.internal
 ```
-- If you want to run any command line snippets for docker compose setup, use concept of start.sh !(more details)[https://www.youtube.com/watch?v=jf6sQsz0M1M&list=PLy_6D98if3ULEtXtNSY_2qN21VCKgoQAE&index=25]
+- If you want to run any command line snippets for docker compose setup, use concept of start.sh. [more details](https://www.youtube.com/watch?v=jf6sQsz0M1M&list=PLy_6D98if3ULEtXtNSY_2qN21VCKgoQAE&index=25)
 
 - All the above instructions can be bundled together into makefile target or some script, but I like it this way as it will become very easier to debug if you know what is happening under the hood.
   
