@@ -31,7 +31,7 @@
   	- Two entries created in entry table, how much money got added/deducted from toAccount and fromAccount
   	- Update account balance of fromAccount and toAccount
 - Testing
-  - Unit testing
+  - Unit tests
   - Integration tests
   - testing via mocking (dependency injection - db layer is injected into api layer)
   - go-mockery is used for mocking
@@ -66,12 +66,26 @@ cli-migrate-up
 ```
 make test
 ```
-### Run banco app
-- make sure token is 32 in length
+### Export variables
 ```
 export TOKEN_SYMMETRIC_KEY=qwertyuiopasdfghjklzxcvbnmqwerty
 export DB_PASSWORD={PASSWORD}
+export DB_HOST=localhost # for local setup
+export DB_HOST=host.docker.internal # for docker setup
+```
+### Run banco app
+- make sure token is 32 in length
+```
 make server
+```
+
+## Docker setup
+```
+export DB_HOST=host.docker.internal
+make setup-db
+docker network create banco
+docker network  connect banco postgres-banco
+docker run --name banco -p 8080:8080 --network banco -e DB_PASSWORD=${DB_PASSWORD} -e TOKEN_SYMMETRIC_KEY=${TOKEN_SYMMETRIC_KEY} -e DB_HOST=${DB_HOST} GIN_MODE=release banco
 ```
 
 ### Use API
